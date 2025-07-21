@@ -128,7 +128,16 @@ watch(
       🎉 ビンゴ！
     </div>
     <div v-else-if="reachLines > 0" class="text-orange-600 font-semibold">
-      ⚠️ リーチ！あと1つで{{ reachLines }}ライン完成！
+      ⚠️
+      {{
+        reachLines === 1
+          ? "リーチ！"
+          : reachLines === 2
+          ? "ダブルリーチ！"
+          : reachLines === 3
+          ? "トリプルリーチ！"
+          : `${reachLines}ラインリーチ！`
+      }}
     </div>
   </div>
   <div class="grid grid-cols-5 gap-2">
