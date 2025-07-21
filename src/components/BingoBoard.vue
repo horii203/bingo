@@ -1,127 +1,49 @@
 <script setup>
 import { ref, watch } from "vue";
 import { words } from "../data/words.js";
+import { getRandomSample, checkLines } from "../utils/bingo.js";
 
 const size = 5;
 const total = size * size;
 const centerIndex = Math.floor(total / 2);
 
-// words から重複なしでランダムに24個選ぶ関数
-function getRandomSample(array, sampleSize) {
-  const result = [];
-  const usedIndices = new Set();
-
-  while (result.length < sampleSize) {
-    const index = Math.floor(Math.random() * array.length);
-    if (!usedIndices.has(index)) {
-      usedIndices.add(index);
-      result.push(array[index]);
-    }
-  }
-
-  return result;
-}
-
-// 24個ランダムに選ぶ（重複なし）
+// words 配列からランダムに 24 個の単語を選ぶ（重複なし）
 const selectedWords = getRandomSample(words, 24);
-
-// ラベル配列を作る（25マス中、中央は "FREE"）
+// ビンゴボードのラベルを作成
 const labels = Array(total).fill("");
 
-// selectedWords を中央を避けて配置
+// 選ばれた単語をラベルに設定
 selectedWords.forEach((word, i) => {
   const pos = i < centerIndex ? i : i + 1;
   labels[pos] = word;
 });
-
-// 中央マスに "FREE" をセット
 labels[centerIndex] = "FREE";
 
-// 「各マスが選択されているかどうか」を管理する配列
+// 選択状態を管理するための配列（中央は最初から選択済み）
 const selected = ref(
   Array.from({ length: total }, (_, i) => i === centerIndex)
 );
 
-// マスをクリックしたときの処理(選択／解除)
+// セルをクリックしたときの処理
 const toggleCell = (index) => {
-  // 中央マスは切り替え不可
-  if (index === centerIndex) return;
-  selected.value[index] = !selected.value[index];
+  if (index !== centerIndex) {
+    selected.value[index] = !selected.value[index];
+  }
 };
 
-// 「ビンゴ」と「リーチ」の状態をチェック
-function checkLines(selected) {
-  // 全てのライン（横・縦・斜め）を配列で定義
-  const lines = [];
-  // 横ライン
-  for (let r = 0; r < size; r++) {
-    const line = [];
-    for (let c = 0; c < size; c++) {
-      line.push(r * size + c);
-    }
-    lines.push(line);
-  }
-  // 縦ライン
-  for (let c = 0; c < size; c++) {
-    const line = [];
-    for (let r = 0; r < size; r++) {
-      line.push(r * size + c);
-    }
-    lines.push(line);
-  }
-  // 斜め2本
-  const diag1 = [];
-  const diag2 = [];
-  for (let i = 0; i < size; i++) {
-    diag1.push(i * size + i);
-    diag2.push(i * size + (size - 1 - i));
-  }
-  lines.push(diag1);
-  lines.push(diag2);
-
-  // ビンゴとリーチのカウント
-  let bingoLines = 0;
-  let reachLines = 0;
-
-  // 各ラインをチェック
-  for (const line of lines) {
-    // 未選択マスの数
-    let unselectedCount = 0;
-
-    for (const idx of line) {
-      if (idx === centerIndex) {
-        // FREEマスは選択済み扱いなので無視してOK
-        continue;
-      }
-      if (!selected.value[idx]) {
-        unselectedCount++;
-      }
-    }
-
-    if (unselectedCount === 0) {
-      // 1つも未選択マスがなければ、そのラインはビンゴ成立
-      bingoLines++;
-    } else if (unselectedCount === 1) {
-      // 未選択マスが1つだけなら、そのラインはリーチ状態
-      reachLines++;
-    }
-  }
-
-  return { bingoLines, reachLines };
-}
-
+// 現在のビンゴライン数とリーチ数
 const bingoLines = ref(0);
 const reachLines = ref(0);
 
-// 選択状態が変わったときにビンゴとリーチの状態をチェック
+// ビンゴの状態を監視
 watch(
   selected,
   () => {
-    const result = checkLines(selected);
+    const result = checkLines(selected, size, centerIndex);
     bingoLines.value = result.bingoLines;
     reachLines.value = result.reachLines;
   },
-  { deep: true } // 配列の中身の変化まで監視するオプション
+  { deep: true } // 配列の中身まで監視するオプション
 );
 </script>
 
@@ -131,7 +53,7 @@ watch(
       🎉 ビンゴ！
     </div>
     <div v-else-if="reachLines > 0" class="text-orange-600 font-semibold">
-      ⚠️
+      ✨
       {{
         reachLines === 1
           ? "リーチ！"
