@@ -6,32 +6,35 @@ const size = 5;
 const total = size * size;
 const centerIndex = Math.floor(total / 2);
 
-// 配列をシャッフルする関数（Fisher-Yates）
-function shuffle(array) {
-  const arr = array.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+// words から重複なしでランダムに24個選ぶ関数
+function getRandomSample(array, sampleSize) {
+  const result = [];
+  const usedIndices = new Set();
+
+  while (result.length < sampleSize) {
+    const index = Math.floor(Math.random() * array.length);
+    if (!usedIndices.has(index)) {
+      usedIndices.add(index);
+      result.push(array[index]);
+    }
   }
-  return arr;
+
+  return result;
 }
 
-// シャッフルしたワード配列
-const shuffledWords = shuffle(words);
+// 24個ランダムに選ぶ（重複なし）
+const selectedWords = getRandomSample(words, 24);
 
-// ラベル配列を作る
+// ラベル配列を作る（25マス中、中央は "FREE"）
 const labels = Array(total).fill("");
-shuffledWords.forEach((word, i) => {
-  if (i >= centerIndex) {
-    // centerIndex以降は一つ後ろのインデックスにセット
-    labels[i + 1] = word;
-  } else {
-    // centerIndexより前はそのままセット
-    labels[i] = word;
-  }
+
+// selectedWords を中央を避けて配置
+selectedWords.forEach((word, i) => {
+  const pos = i < centerIndex ? i : i + 1;
+  labels[pos] = word;
 });
 
-// 中央マスにFREEをセット
+// 中央マスに "FREE" をセット
 labels[centerIndex] = "FREE";
 
 // 「各マスが選択されているかどうか」を管理する配列
@@ -145,7 +148,7 @@ watch(
       v-for="(label, index) in labels"
       :key="index"
       :class="[
-        'w-16 h-16 p-2 flex items-center justify-center rounded cursor-pointer transition',
+        'w-20 h-20 p-2 flex items-center justify-center rounded cursor-pointer transition',
         selected[index]
           ? 'bg-green-400 text-white'
           : 'bg-white hover:bg-gray-100 border',
