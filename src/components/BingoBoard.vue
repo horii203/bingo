@@ -7,7 +7,7 @@ const size = 3;
 const total = size * size;
 
 // words 配列からランダムに単語を選ぶ（重複なし）
-const labels = getRandomSample(words, total);
+const labels = ref(getRandomSample(words, total));
 
 // 選択状態を管理するための配列
 const selected = ref(Array(total).fill(false));
@@ -54,6 +54,14 @@ const catMessage = computed(() => {
     return "がんばってニャ〜";
   }
 });
+
+// ワードをリセットする関数
+const resetBoard = () => {
+  selected.value = Array(total).fill(false);
+  labels.value = getRandomSample(words, total);
+  bingoLines.value = 0;
+  reachLines.value = 0;
+};
 </script>
 
 <template>
@@ -90,6 +98,13 @@ const catMessage = computed(() => {
       </div>
     </div>
   </div>
+
+  <button
+    @click="resetBoard"
+    class="px-4 py-2 bg-blue-500 text-white rounded-lg transition cursor-pointer hover:bg-blue-600 mt-4"
+  >
+    ワードをリセット
+  </button>
 </template>
 
 <style scoped>
