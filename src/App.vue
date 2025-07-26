@@ -3,8 +3,14 @@ import BingoBoard from "./components/BingoBoard.vue";
 </script>
 
 <template>
-  <main>
-    <h1 class="text-3xl mb-6 font-bold">自己紹介ビンゴ</h1>
-    <BingoBoard :words="words" />
+  <main
+    class="p-4 flex items-center justify-center min-w-[320px] min-h-screen text-center bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-400"
+  >
+    <div>
+      <h1 class="text-3xl sm:text-4xl mb-4 sm:mb-6 text-white">
+        自己紹介BINGO
+      </h1>
+      <BingoBoard :words="words" />
+    </div>
   </main>
 </template>
