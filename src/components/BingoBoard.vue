@@ -3,32 +3,18 @@ import { ref, watch, computed } from "vue";
 import { words } from "../data/words.js";
 import { getRandomSample, checkLines } from "../utils/bingo.js";
 
-const size = 5;
+const size = 3;
 const total = size * size;
-const centerIndex = Math.floor(total / 2);
 
-// words 配列からランダムに 24 個の単語を選ぶ（重複なし）
-const selectedWords = getRandomSample(words, 24);
-// ビンゴボードのラベルを作成
-const labels = Array(total).fill("");
+// words 配列からランダムに単語を選ぶ（重複なし）
+const labels = getRandomSample(words, total);
 
-// 選ばれた単語をラベルに設定
-selectedWords.forEach((word, i) => {
-  const pos = i < centerIndex ? i : i + 1;
-  labels[pos] = word;
-});
-labels[centerIndex] = "FREE";
-
-// 選択状態を管理するための配列（中央は最初から選択済み）
-const selected = ref(
-  Array.from({ length: total }, (_, i) => i === centerIndex)
-);
+// 選択状態を管理するための配列
+const selected = ref(Array(total).fill(false));
 
 // セルをクリックしたときの処理
 const toggleCell = (index) => {
-  if (index !== centerIndex) {
-    selected.value[index] = !selected.value[index];
-  }
+  selected.value[index] = !selected.value[index];
 };
 
 // 現在のビンゴライン数とリーチ数
@@ -39,12 +25,13 @@ const reachLines = ref(0);
 watch(
   selected,
   () => {
-    const result = checkLines(selected, size, centerIndex);
+    const result = checkLines(selected, size);
     bingoLines.value = result.bingoLines;
     reachLines.value = result.reachLines;
   },
   { deep: true } // 配列の中身まで監視するオプション
 );
+
 // ネコの画像とメッセージを動的に変更するための計算プロパティ
 const catImage = computed(() => {
   if (bingoLines.value > 0) return "/img/img03.png";
@@ -70,15 +57,15 @@ const catMessage = computed(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-5 gap-2">
+  <div class="grid grid-cols-3 gap-2">
     <div
       v-for="(label, index) in labels"
       :key="index"
       :class="[
-        'aspect-square flex items-center justify-center rounded-lg cursor-pointer text-sm md:text-base transition',
+        'aspect-square flex items-center justify-center rounded-lg cursor-pointer text-lg transition shadow-md',
         selected[index]
           ? 'bg-green-400 text-white'
-          : 'bg-white hover:bg-gray-100 shadow-md',
+          : 'bg-white hover:bg-gray-100',
       ]"
       @click="toggleCell(index)"
     >

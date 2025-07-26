@@ -13,7 +13,7 @@ export const getRandomSample = (array, sampleSize) => {
 };
 
 // 「ビンゴ」と「リーチ」の状態をチェック
-export const checkLines = (selected, size, centerIndex) => {
+export const checkLines = (selected, size) => {
   // 全てのライン（横・縦・斜め）を配列で定義
   const lines = [];
   // 横ライン
@@ -50,8 +50,6 @@ export const checkLines = (selected, size, centerIndex) => {
     // 未選択マスの数
     let unselected = 0;
     for (const idx of line) {
-      // FREEマスは選択済み扱いなので無視してOK
-      if (idx === centerIndex) continue;
       if (!selected.value[idx]) unselected++;
     }
     // 1つも未選択マスがなければ、そのラインはビンゴ成立
